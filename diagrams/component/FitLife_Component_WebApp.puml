@@ -1,0 +1,36 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+!define ACTOR person
+!define CONTAINER cloud
+!define COMPONENT rectangle
+
+LAYOUT_WITH_LEGEND()
+
+title Компонентная диаграмма веб-приложения FitLife
+
+' Границы веб-приложения (контейнер)
+Boundary(webapp, "Веб-приложение FitLife", "Содержит компоненты") {
+
+    Component(userComp, "User Manager", "Модуль", "Управление пользователями (User)")
+    Component(membershipComp, "Membership Service", "Модуль", "Управление членством (Membership)")
+    Component(scheduleComp, "Schedule Service", "Модуль", "Управление расписанием (Schedule)")
+    Component(paymentComp, "Payment Processor", "Модуль", "Обработка платежей (Payment)")
+}
+
+' Внешние системы
+System_Ext(bank, "Банк", "Платёжный шлюз")
+Person(client, "Клиент", "Пользователь FitLife")
+
+' Связи
+Rel(client, userComp, "Регистрируется, управляет профилем", "HTTPS")
+Rel(client, membershipComp, "Покупает/отменяет абонемент", "HTTPS")
+Rel(client, scheduleComp, "Просматривает расписание", "HTTPS")
+
+Rel(userComp, membershipComp, "Передаёт данные пользователя")
+Rel(membershipComp, paymentComp, "Запрос на оплату")
+Rel(paymentComp, bank, "Проводит транзакцию", "API")
+
+Rel(scheduleComp, membershipComp, "Проверяет активность членства")
+
+@enduml

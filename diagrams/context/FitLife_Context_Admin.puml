@@ -1,0 +1,15 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Title Контекстная диаграмма системы FitLife — уровень L1 (Администратор)
+
+' Определяем внешние сущности (пользователи/роли)
+Person(admin, "Администратор", "Управляет расписанием")
+
+' Определяем нашу систему
+System(fitlife, "Система FitLife", "Управляет расписанием, членством и платежами")
+
+' Связи
+Rel(admin, fitlife, "Управляет расписанием")
+
+@enduml

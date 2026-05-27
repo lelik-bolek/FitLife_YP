@@ -1,0 +1,54 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+' Общие настройки
+LAYOUT_TOP_DOWN()
+LAYOUT_WITH_LEGEND()
+
+Title Диаграмма контейнеров системы FitLife (L2)
+
+' Определяем внешние сущности
+Person(client, "Клиент", "Пользователь мобильного приложения")
+
+System_Ext(bank, "Внешний банк", "Процессинг платежей")
+
+' Граница системы FitLife
+System_Boundary(fitlife, "Система FitLife") {
+
+    ' Контейнер 1: Мобильное приложение
+    Container(mobile_app, "Мобильное приложение", "React Native", "Позволяет клиентам покупать абонементы и записываться на тренировки")
+
+    ' Контейнер 2: UserService + его БД
+    Container(user_service, "User Service", "Node.js", "Управляет пользователями, членством и абонементами")
+    ContainerDb(user_db, "User Database", "PostgreSQL", "Хранит данные пользователей и их членств")
+
+    ' Контейнер 3: PaymentService
+    Container(payment_service, "Payment Service", "Go", "Обрабатывает платежи, взаимодействует с внешним банком")
+
+    ' Контейнер 4: ScheduleService
+    Container(schedule_service, "Schedule Service", "Python", "Управляет расписанием тренировок")
+
+    ' Опционально: база данных для расписания (не указана, но логично добавить)
+    ContainerDb(schedule_db, "Schedule Database", "PostgreSQL", "Хранит расписание тренировок (activity, date)")
+}
+
+' Связи клиента с мобильным приложением
+Rel(client, mobile_app, "Использует", "HTTPS")
+
+' Связи мобильного приложения с сервисами
+Rel(mobile_app, user_service, "Проверяет статус абонемента, просматривает профиль", "REST API (HTTPS)")
+Rel(mobile_app, payment_service, "Инициирует оплату абонемента", "REST API (HTTPS)")
+Rel(mobile_app, schedule_service, "Просматривает расписание, записывается на тренировки", "REST API (HTTPS)")
+
+' Взаимодействие PaymentService с внешним банком и UserService
+Rel(payment_service, bank, "Отправляет запрос на списание средств", "HTTPS (банковский API)")
+Rel(payment_service, user_service, "Уведомляет об успешной оплате, активирует абонемент", "REST API (HTTPS)")
+
+' Взаимодействие ScheduleService с UserService (проверка абонемента)
+Rel(schedule_service, user_service, "Проверяет, активен ли абонемент у пользователя", "REST API (HTTPS)")
+
+' Связи сервисов с их базами данных
+Rel(user_service, user_db, "Читает/пишет", "SQL/ODBC")
+Rel(schedule_service, schedule_db, "Читает/пишет", "SQL/ODBC")
+
+@enduml

@@ -1,0 +1,13 @@
+@startuml
+' Указываем правильный относительный путь к скачанному файлу библиотеки C4_Context.puml
+'!include ../../libraries/C4-PlantUML/C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+' Дальше мы используем новые команды, которые появились благодаря этой библиотеке (например, Person, System)
+Title Контекстная диаграмма системы FitLife
+
+Person(user, "Клиент фитнес-клуба", "Покупает абонементы и записывается на тренировки")
+System(fitlife, "Система FitLife", "Управляет расписанием, членством и платежами")
+
+Rel(user, fitlife, "Пользуется через мобильное приложение")
+@enduml
