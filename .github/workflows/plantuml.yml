@@ -9,7 +9,7 @@ on:
 jobs:
   generate-diagrams:
     runs-on: ubuntu-latest
-    if: github.actor != 'github-actions[bot]'   # избегаем цикла
+    if: github.actor != 'github-actions[bot]'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,27 +17,28 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'    # <-- обязательный параметр
+          distribution: 'temurin'
           java-version: '11'
 
-      - name: Install PlantUML
-        run: sudo apt-get update && sudo apt-get install -y plantuml
+      - name: Install Graphviz and download latest PlantUML
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz
+          wget -O plantuml.jar https://github.com/plantuml/plantuml/releases/download/v1.2024.8/plantuml-1.2024.8.jar
+          echo 'java -jar $PWD/plantuml.jar "$@"' > plantuml
+          chmod +x plantuml
+          sudo mv plantuml /usr/local/bin/
 
       - name: Generate PNGs
         run: |
-          set -e
-          for file in $(find diagrams -name "*.puml"); do
-            echo "Processing $file"
-            plantuml -tpng "$file" || exit 1
-          done
-          plantuml diagrams/context/*.puml
-          plantuml diagrams/container/*.puml
-          plantuml diagrams/component/*.puml
-          plantuml diagrams/code/*.puml
+          plantuml -tpng diagrams/context/*.puml
+          plantuml -tpng diagrams/container/*.puml
+          plantuml -tpng diagrams/component/*.puml
+          plantuml -tpng diagrams/code/*.puml
 
       - name: Commit and push if changed
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add diagrams/**/*.png
-          git diff --staged --quiet || (git commit -m "Automated diagram generation [skip ci]" && git push origin main)
+          git diff --staged --quiet || (git commit -m "Auto-generate diagrams [skip ci]" && git push origin main)
