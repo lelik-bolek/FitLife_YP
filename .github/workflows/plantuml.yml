@@ -2,41 +2,37 @@ name: PlantUML Diagrams
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   generate-diagrams:
     runs-on: ubuntu-latest
-
+    if: github.actor != 'github-actions[bot]'   # избегаем цикла
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Java
-      uses: actions/setup-java@v2
-      with:
-        distribution: 'temurin'
-        java-version: '11'
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'    # <-- обязательный параметр
+          java-version: '11'
 
-    - name: Install PlantUML
-      run: sudo apt-get install plantuml
+      - name: Install PlantUML
+        run: sudo apt-get update && sudo apt-get install -y plantuml
 
-    - name: Generate Diagrams
-      run: |
-        plantuml diagrams/context/*.puml
-        plantuml diagrams/container/*.puml
-        plantuml diagrams/component/*.puml
-        plantuml diagrams/code/*.puml
+      - name: Generate PNGs
+        run: |
+          plantuml diagrams/context/*.puml
+          plantuml diagrams/container/*.puml
+          plantuml diagrams/component/*.puml
+          plantuml diagrams/code/*.puml
 
-    - name: Commit Diagrams
-      run: |
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
-        git add diagrams/**/*.png
-        git commit -m "Automated diagram generation"
-        git push origin main
-      if: success()
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add diagrams/**/*.png
+          git diff --staged --quiet || (git commit -m "Automated diagram generation [skip ci]" && git push origin main)
